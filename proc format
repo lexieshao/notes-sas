@@ -1,0 +1,67 @@
+/*
+PROC FORMAT是用来定义数值或符号文字的输出格式。 能够使我们在观看输出的Output时更易于了解及阅读。在使用此程序时，请注意，这个程序只是"定义"
+并不会自动输出至Output，我们必须用PROC FORMAT宣告的输出格式，配合以下两个程序步骤之相对应的宣告值使用
+1、在DATA中的INPUT和FORMAT    2、在PROC中的FORMAT 
+上述的意思是：我们先以PROC FORMAT定义出输出的格式，然后再以DATA和PROC 呼叫已定义好的输出格式*/
+
+PROC FORMAT option; 
+VALUE name(options)
+range1=label1
+range2=label2
+...;
+RUN;
+/*option只有一项，即LIBRARY=libref。 此选项是为了要将之后宣告的输出格式设为永久数据集，以供日后使用。 
+若未指名此项，输出格式将" 暂 "存于WORK次目录中。同一个程序中，只须以FORMAT叙述句呼叫出即可。 
+若必须于不同的程序中使用同样的输出格式，则可建立一个永久格式。*/
+LIBNAME save 'c:\lin'; 
+PROC FORMAT LIBRARY=save; 
+VALUE SEXFMT 1='男' 
+2='女'; 
+RUN;
+/*
+VALUE name(options)
+(1) name是指定的格式名称，其命名规则与SAS数据文件的文件名和变量名之命名规则相同，但若为文字变量，
+则在最前面加上"contentquot;即可。请注意，在之后的FORMAT叙述句呼叫时，需在此格式名称后紧接一个句点，即"."。
+(2) options 有四个：
+i)MIN=n，设定格式的最小宽度。
+ii)MAX=n，设定格式的最大宽度。
+iii)DEFAULT，以系统内定值为最长的描述格式或数值标签的长度。
+iv)FUZZ=n，给予一个范围n，只要数值未超出范围，程序仍能给定卷标，反之无法给定。
+*/
+proc format;
+VALUE SCOREFMT
+0-<60='不及格'
+OTHER='及格';
+RUN;
+low-60='不及格‘
+90-high=’优秀‘
+[5, 10] --->   5-10
+(5, 10] --->   5<-10
+[5, 10)--->    5-<10 
+三、程序范例引用
+
+--------------------------------------------------------------------------------
+PROC FORMAT;
+VALUE GENDERFMT 
+1='Male' 2='Female';
+VALUE AGEFMT 
+1-25='25 and below' 26-30='26-30' 31-35='31-35' 36-40='36-40' 41-45='41-45' 46-50='46-50' 51-55='51-55' 56-60='56-60'
+OTHER='60 and above';
+VALUE DEGREEFMT 
+1='BA' 2='Working on MB' 3='Oversea MB' 4='Local MB' 4='Local MB' 5='Working on PH.D' 6='Oversea PH.D' 6='Oversea PH.D'
+7='Local PH.D' 8='Otherwise';
+VALUE EXPFMT 
+0-5='0-5' 6-10='6-10' 11-15='11-15' 16-20='16-20'
+21-25='21-25' 26-30='26-30' 31-35='31-35';
+VALUE FREQFMT 
+0='0' 1-2='1-2' 3-4='3-4' 5-6='5-6' 7-8='7-8';
+DATA A1;
+INFILE 'CONTEST.TXT';
+INPUT OBS GENDER AGE DEGREE EXP FREQ;
+PROC PRINT;
+FORMAT GENDER GENDERFMT.
+AGE AGEFMT.
+DEGREE DEGREEFMT.
+EXP EXPFMT.
+FREQ FREQFMT.;
+RUN;

@@ -1,0 +1,215 @@
+/* 01 program */
+* Read internal data into SAS data set; 
+DATA uspresidents;    
+INPUT President $ Party $ Number;
+  cards;
+Adams     F  2
+Lincoln   R 16
+Grant     R 18
+Kennedy   D 35
+;
+RUN;
+/* 02 program */
+* Read data from external file into SAS data set; 
+DATA uspresidents;
+   INFILE 'C:\lizzieshao\lsascode\President.dat';
+   INPUT President $ Party $ Number;
+RUN;
+/*the log will tell like 最大记录长度是 13。 SAS log also tells RECFM=V,LRECL=32767,if your 
+data is longer ,you can code like INFILE ’c:\MyRawData\President.dat’ LRECL=2000;*/
+
+
+/* 03Program */
+* Create a SAS data set;
+* Read the data file  using list input(读取空格分开的原始数据，
+字符串数据不能包含空格、长度不能超过 8 个
+字符。）,$ means charvar;
+DATA toads;
+   INFILE 'C:\lizzieshao\lsascode\ToadJump.dat';
+   INPUT ToadName $ Weight Jump1 Jump2 Jump3;
+RUN;
+* Print the data to make sure the file was read correctly;
+PROC PRINT DATA = toads;
+   TITLE 'SAS Data Set Toads';
+RUN;
+/*04 Program */
+* Read the data file  using column input（变量的值都出现在数据行的相同位置时）;
+DATA sales;
+   INFILE 'C:\lizzieshao\lsascode\OnionRing.dat';
+   INPUT VisitingTeam $ 1-20 ConcessionSales 21-24 BleacherSales 25-28
+         OurHits 29-31 TheirHits 32-34 OurRuns 35-37 TheirRuns 38-40;
+RUN;
+* Print the data to make sure the file was read correctly;
+PROC PRINT DATA = sales;
+   TITLE 'SAS Data Set Sales';
+RUN;
+
+/* 非标准格式读入 */
+/* 05 Program */
+* Read the file using formatted input;
+DATA contest;
+   INFILE 'C:\lizzieshao\lsascode\Pumpkin.dat';
+   INPUT Name $16. Age 3. +1 Type $1. +1 Date MMDDYY10.
+         (Score1 Score2 Score3 Score4 Score5) (4.1);
+RUN;
+* 第一个数字是宽度，第二个数字是小数点位数以.结尾，+1表示跳过一列，score1-5具有相同的格式，日期型以19600101为0
+Print the data set to make sure the file was read correctly;
+PROC PRINT DATA = contest;
+   TITLE 'Pumpkin Carving Contest';
+RUN;
+/*06 Program */
+* Read a data file  mixing input styles;
+DATA nationalparks;
+   INFILE 'C:\lizzieshao\lsascode\NatPark.dat';
+   INPUT ParkName $ 1-22 State $ Year @40 Acreage COMMA9.;
+RUN;
+*@n为列指示器 ，在读取acreage之前指针移到40列。comma9 意为读取9列;
+PROC PRINT DATA = nationalparks;
+   TITLE 'Selected National Parks';
+RUN;
+*读取杂乱的原始数据，列指示器@'character', e.g. input @'breed:'dogbreed$,读取数据前面的那个字符
+e.g. my dog sam breed:rottweiler vet bills:$478
+if code input @'breed:'dogbreed $    then output  rottweiler
+if code input @'breed:'dogbreed $20.  then output rottweiler vet bills  （$后指示长度，空格也算）
+if code input @'breed:'dogbreed :$20. then output rottweiler（：指示遇到空格则不再往后）;
+
+/* Section 2.10 */
+
+/*07 Program */
+DATA weblogs;
+  INFILE 'c:\MyWebLogs\dogweblogs.txt';
+  INPUT @'[' AccessDate DATE11. @'GET' File :$20.;
+RUN;
+PROC PRINT DATA = weblogs;
+  TITLE 'Dog Care Web Logs';
+RUN;
+*@’[’作为列指示器，告诉 SAS 读取[之后的内容， @’GET’告诉 SAS 读取 GET 之后的内容，
+由于文件名作为字符串变量，这里基本都会超过 8 个字节，因此后面附加:$20。;
+/*08 Program */
+* Read the data file using line pointers,/表示转到下一行，#3，表示跳转到第三行;
+DATA highlow;
+   INFILE 'C:\lizzieshao\lsascode\Temperature.dat';
+   INPUT City $ State $ 
+         / NormalHigh NormalLow
+         #3 RecordHigh RecordLow;
+RUN;
+PROC PRINT DATA = highlow;
+   TITLE 'High and Low Temperatures for July';
+RUN;
+/*09 Program */
+* 一行有多个观测值;
+DATA rainfall;
+   INFILE 'C:\lizzieshao\lsascode\Precipitation.dat';
+   INPUT City $ State $ NormalRain MeanDaysRain @@;
+RUN;
+*停止符号@@;
+PROC PRINT DATA = rainfall;
+   TITLE 'Normal Total Precipitation and';
+   TITLE2 'Mean Days with Precipitation for July';
+RUN;
+/*10 Program */
+* 读取原始数据的部分观测值Use a trailing @,hold, then delete surface streets;
+DATA freeways;
+   INFILE 'C:\lizzieshao\lsascode\Traffic.dat';
+   INPUT Type $ @;
+   IF Type = 'surface' THEN DELETE;
+   INPUT Name $ 9-38 AMTraffic PMTraffic;
+RUN;
+PROC PRINT DATA = freeways;
+   TITLE 'Traffic for Freeways';
+RUN;
+/*@ vs @@ 
+@的作用类似于@@，都是行停留指示符（ line-hold specifiers），
+不同地方在于停
+留多久， 
+@能使 SAS 停留到下一个 input 语句（也不换行）， 
+@@能使停留的时间到下一个data 步（也不换行）。*/
+data test;
+    infile cards;
+	input x @;
+	input y;
+	input z @@;
+cards;
+1 2 3 4 5 6 
+7 8 9 10 11 12
+13 14 15 16 17
+;
+run;
+/* 11 Program */
+*输入选项控制，从第三行开始读取;
+
+DATA icecream;
+   INFILE 'C:\lizzieshao\lsascode\IceCreamSales.dat' FIRSTOBS = 3;
+   INPUT Flavor $ 1-9 Location BoxesSold;
+RUN;
+
+
+/* 12 Second Program ，读取到第五行*/
+
+DATA icecream;
+   INFILE 'C:\lizzieshao\lsascode\IceCreamSales2.dat' FIRSTOBS = 3 OBS=5;
+   INPUT Flavor $ 1-9 Location BoxesSold;
+RUN;
+
+
+/* 13 Program ，每条记录不一样长，不自动转到下一行，没有值则为空值*/
+
+DATA class102;
+   INFILE 'C:\lizzieshao\lsascode\AllScores.dat' MISSOVER;
+   INPUT Name $ Test1 Test2 Test3 Test4 Test5;
+RUN; 
+
+
+/* 14 Program，避免长短不一转到下一行 */
+
+DATA homeaddress;
+   INFILE 'C:\lizzieshao\lsascode\Address.dat' TRUNCOVER;
+   INPUT Name $ 1-15 Number 16-19 Street $ 22-37;
+RUN;
+
+/* 用数据步读取分隔符文件 */
+
+/* 01 Program ，DLM指定分隔符，有，  制表符 ‘09’x*/
+
+DATA reading;
+   INFILE 'C:\lizzieshao\lsascode\Books.dat' DLM = ',';
+   INPUT Name $ Week1 Week2 Week3 Week4 Week5;
+RUN;
+
+
+/* 02 Program ，csv文件是逗号分隔符，DSD默认分隔符为逗号，作用：1、忽略引号中的分隔符；
+2、相邻两个分隔符识别为缺失值
+3、去掉字符串中的引号
+由于每个记录长度不一，所以用了missover
+冒号修改器：重新指定长度，默认是最长的值长度
+*/
+
+DATA music;
+   INFILE 'C:\lizzieshao\lsascode\Bands.csv' DLM = ',' DSD MISSOVER;
+   INPUT BandName :$30. GigDate :MMDDYY10. EightPM NinePM TenPM ElevenPM;
+RUN;
+PROC PRINT DATA = music;
+   TITLE 'Customers at Each Gig';
+RUN;
+
+/* proc import，会自动决定变量类型、长度、日期变量、将两个连续的分隔符视为缺失值，读取引号中的变量值，
+一行读完会自动分配缺失值给没有赋值的变量，使用第一行作为变量名
+并且会在log中给出相应的data步
+*/
+
+/*01 Program   */
+
+PROC IMPORT DATAFILE ='C:\lizzieshao\lsascode\Bands2.csv' OUT = music REPLACE;
+RUN;
+PROC PRINT DATA = music;    
+   TITLE 'Customers at Each Gig'; RUN;
+/*02 Program ，更多选项，DBMS指定正确的扩展名，getnames=no，首行非变量名；delimiter=，改变默认分隔符
+   datarows=n，默认为1，开始行
+   guessingrows=n，默认为20，
+   sheet=表名*/
+PROC IMPORT DATAFILE = 'c:\MyExcelFiles\OnionRing.xls' DBMS=XLS OUT = sales;
+RUN;
+PROC PRINT DATA = sales;
+   TITLE 'SAS Data Set Read From Excel File'; RUN;
+
+

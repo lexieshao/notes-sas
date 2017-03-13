@@ -1,0 +1,52 @@
+/*临时与永久数据集*/
+/*01 First Program ，临时数据集*/
+DATA distance; 
+   Miles = 26.22;
+   Kilometers = 1.61 * Miles;
+RUN;
+PROC PRINT DATA = distance;
+RUN;
+
+/* 02 Program ，永久数据集*/
+LIBNAME plants 'c:\MySASLib';
+DATA plants.magnolia;
+   INFILE 'C:\lizzieshao\lsascode\Mag.dat';
+   INPUT ScientificName $ 1-14 CommonName $ 16-32 MaximumHeight
+      AgeBloom Type $ Color $;
+RUN;
+LIBNAME example 'c:\MySASLib';
+PROC PRINT DATA = example.magnolia;
+   TITLE 'Magnolias';
+RUN;
+/* 03 Program ，通过直接指代使用永久数据库*/
+DATA 'c:\MySASLib\magnolia';
+   INFILE 'C:\lizzieshao\lsascode\Mag.dat';
+   INPUT ScientificName $ 1-14 CommonName $ 16-32 MaximumHeight
+      AgeBloom Type $ Color $;
+RUN;
+PROC PRINT DATA = 'c:\MySASLib\magnolia';
+   TITLE 'Magnolias';
+RUN;
+
+/* 04 Program， label 语句为变量打上标签，并储存在数据集中，在打印时会显示，过程步中也可以使用 label，
+但只在 proc contents 中有效，不会储存在数据集中
+Informat 和 format 可以指定信息和格式，
+储存在数据集中，也可以在过程步中使用，但不储存在数据集中*/
+
+DATA funnies (LABEL = 'Comics Character Data');
+   INPUT Id Name $ Height Weight DoB MMDDYY8. @@;
+   LABEL Id  = 'Identification no.'
+      Height = 'Height in inches'
+      Weight = 'Weight in pounds'
+      DoB    = 'Date of birth';
+   INFORMAT DoB MMDDYY8.;
+   FORMAT DoB WORDDATE18.;
+   DATALINES;
+53      Susie 42 41 07-11-81 
+54      Charlie 46 55 10-26-54
+55      Calvin 40 35 01-10-81 
+56      Lucy 46 52 01-13-55
+   ;
+* Use PROC CONTENTS to describe data set funnies;
+PROC CONTENTS DATA = funnies;
+RUN;

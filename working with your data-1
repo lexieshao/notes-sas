@@ -1,0 +1,176 @@
+/*01 Program ,
+Variable=expression,创建变量，赋值，计算，横向相加*/
+* Modify homegarden data set with assignment statements;
+DATA homegarden;
+   INFILE 'C:\lizzieshao\lsascode\Garden.dat';
+   INPUT Name $ 1-7 Tomato Zucchini Peas Grapes;
+
+   Zone = 14;
+   Type = 'home';
+   Zucchini = Zucchini * 10;
+   Total = Tomato + Zucchini + Peas + Grapes;
+   PerTom = (Tomato / Total) * 100;
+RUN;
+PROC PRINT DATA = homegarden;
+   TITLE 'Home Gardening Survey';
+RUN;
+/*02 Program ，使用sas函数，（字符函数、日期型函数、金融函数、宏、数学函数），所有的函数都需要加括弧，即使没有参数
+*/
+DATA contest;
+   INFILE 'C:\lizzieshao\lsascode\Pumpkin.dat';
+   INPUT Name $16. Age 3. +1 Type $1. +1 Date MMDDYY10.
+         (Scr1 Scr2 Scr3 Scr4 Scr5) (4.1);
+   AvgScore = MEAN(Scr1, Scr2, Scr3, Scr4, Scr5);
+   DayEntered = DAY(Date);
+   *返回日期在一个月里的天数，28,29,30,31;
+   Type = UPCASE(Type);
+   *转换为大写;
+RUN;
+PROC PRINT DATA = contest;
+   TITLE 'Pumpkin Carving Contest';
+RUN;
+
+
+/* SAS CHARACTER FUNCTION */
+DATA;
+anyalnum(arg,start),第一次出现的位置;
+anyapha(arg,start);
+anydigit(arg,start);
+anyspace(arg,start);
+cat(arg-1,...arg-n),连接函数;
+cats(arg-1,...arg-n),去除空白;
+cats('separator-string',arg-1,...arg-n),去除空白，插入分隔符;
+compress(arg,'char'),删除空白或其他;
+index(arg,'string'),返回开始位置;
+left(arg),左对齐;
+length(arg),不包含空格，缺失值长度为1;
+propcase(arg),首字母大写;
+substr(arg,position,n);
+stranslate(source,to-1,from-1,...to-n,from-n),替代;
+tranwrd(source,from,to),替代;
+trim(arg),删除尾部空格;
+upcase(arg),变为大写;
+RUN;
+
+/* SAS NUMERIC FUNCTION */
+data;
+int(arg),整数部分;
+log(arg),ln;
+log10(arg);
+max(arg-1,...arg-n);
+min();
+mean();
+n(arg-1,...arg-n),非空数;
+nmiss(),number of missing values;
+round(arg,round-off-unit),四舍五入;
+sum(),sum of non-missing values;
+run;
+/* SAS DATE FUNCTION */
+data;
+datejul(julian-date),转换为sas日期;
+day(date),returns the day of the month from a sas day value;
+mdy(month,day,year),1960.01.01为0;
+month(date);
+qtr(date),季度;
+today(),当前日期;
+y=today()-1,yesterday;
+weekday(date),1=sunday;
+year(date);
+yrdif(start-date,end-date,'actual'),年度差;
+
+/*03 Program  if then
+逻辑符号  =   EQ
+        ^=  NE
+        >    GT
+        <     LT
+        >=    GE
+        <=    LE    IN
+         &     AND
+        |     OR 
+多个执行用do end*/
+
+DATA sportscars;
+   INFILE 'C:\lizzieshao\lsascode\UsedCars.dat';
+   INPUT Model $ Year Make $ Seats Color $;
+   IF Year < 1975 THEN Status = 'classic';
+   IF Model = 'Corvette' OR Model = 'Camaro' THEN Make = 'Chevy';
+   IF Model = 'Miata' THEN DO;
+      Make = 'Mazda';
+      Seats = 2;
+   END;
+RUN;
+PROC PRINT DATA = sportscars;
+   TITLE "Eddy’s Excellent Emporium of Used Sports Cars";
+RUN;
+
+/*04 Program  if else 1、更有效率，占用时间少2、确保两个condition互斥*/
+* Group observations by cost;
+DATA homeimprovements;
+   INFILE 'C:\lizzieshao\lsascode\Home.dat';
+   INPUT Owner $ 1-7 Description $ 9-33 Cost;
+   IF Cost = . THEN CostGroup = 'missing';
+      ELSE IF Cost < 2000 THEN CostGroup = 'low';
+      ELSE IF Cost < 10000 THEN CostGroup = 'medium';
+      ELSE CostGroup = 'high';
+RUN;
+PROC PRINT DATA = homeimprovements;
+   TITLE 'Home Improvement Cost Groups';
+RUN;
+
+/*05 rogram 构造子集 with if*/
+* Choose only comedies;
+DATA comedy;
+   INFILE 'C:\lizzieshao\lsascode\Shakespeare.dat';
+   INPUT Title $ 1-26 Year Type $;
+   IF Type = 'comedy';
+*等价于 
+   if type='stragedy' or type='romance' 
+   or type='history' then delete;
+RUN;
+PROC PRINT DATA = comedy;
+   TITLE 'Shakespearean Comedies';
+RUN;
+
+/*06 Program ,日期数据处理：
+读取数据的informats：DATEw. 1 jan 1961 ddmmmyy or ddmmmyyyy;
+DDMMYYw. 01.01.61 or 01/01/61;
+JULIANw. 61001  yyddd;
+MMDDYYw. 01-01-61，
+使用日期函数，
+打印数据的formats:
+8966
+*DATEw. :put var date7.  19jul84
+        put var date9.  19jul1984;
+*DAYw. : put var day2.   19   ;
+eurdfddw.put var eurdfdd8. 19.07.84
+         put var eurdfdd10. 19.07.1984
+julianw.:put var julian5.   84201
+          put var julian7.   1984201;
+*mmddyyw. put var mmddyy8.   07/19/84
+         put var mmddyy6.    071984;
+weekdatew. put var weekdate15. thu,jul 19,84
+           put var weekdate29. thursday,july 19,1984
+day of week,month-name dd,yy;
+worddatew. put var worddate12. jul 19,1984
+           put var worddate18. july 19,1984
+month-name dd,yyy
+dd.mm.yy;
+ddmmmyy;
+options yearcutoff=1950,指定一个一百年的第一年
+通过在表达式中加入引号和D，可以将日期当做常数
+*/
+
+DATA librarycards;
+   INFILE 'C:\lizzieshao\lsascode\Library.dat' TRUNCOVER;
+   INPUT Name $11. + 1 BirthDate MMDDYY10. +1 IssueDate ANYDTDTE10.
+      DueDate DATE11.;
+   expiredate=issuedate+(365.25*3);
+   expirequater=qtr(expiredate);
+   DaysOverDue = TODAY() - DueDate;
+   Age = INT(YRDIF(BirthDate, TODAY(), 'ACTUAL'));
+   IF IssueDate > '01JAN2008'D THEN NewCard = 'yes';
+RUN;
+PROC PRINT DATA = librarycards;
+   FORMAT Issuedate MMDDYY8. DueDate WEEKDATE17.;
+   TITLE 'SAS Dates without and with Formats';
+RUN;

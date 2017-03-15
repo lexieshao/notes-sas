@@ -1,0 +1,55 @@
+/*------------------------------- 华丽丽的分割线--------------------------*/
+
+/*01 Program retain and sum
+sas默认首先将所有变量设为缺失，再input
+改变：retain 默认用前一次值，可以设置初始值 retain var initial-value
+sum 累加 var+expression 等价于 retain var 0; var=sum(var,expression)
+迭代*/
+* Using RETAIN and sum statements to find most runs and total runs;
+DATA gamestats;
+   INFILE 'C:\lizzieshao\lsascode\Games.dat';
+   INPUT Month 1 Day 3-4 Team $ 6-25 Hits 27-28 Runs 30-31;
+   RETAIN MaxRuns;
+   MaxRuns = MAX(MaxRuns, Runs);
+   RunsToDate + Runs;
+RUN;
+PROC PRINT DATA = gamestats;
+   TITLE "Season's Record to Date";
+RUN;
+/*02 Program 数组 Simplifying Programs with Arrays
+对于很多变量需要处理，数组简化程序
+数组是一组变量，其中变量可以是已经存在的或者是新建的
+array name(n)$ var-list
+name:数组名 n：变量数 () or [] $声明字符型*/
+* Change all 9s to missing values;
+DATA songs;
+   INFILE 'C:\lizzieshao\lsascode\WBRK.dat';
+   INPUT City $ 1-15 Age domk wj hwow simbh kt aomm libm tr filp ttr;
+   ARRAY song (10) domk wj hwow simbh kt aomm libm tr filp ttr;
+   DO i = 1 TO 10;
+      IF song(i) = 9 THEN song(i) = .;
+   END;
+RUN;
+PROC PRINT DATA = songs;
+   TITLE 'WBRK Song Survey';
+RUN;
+
+/*03 Program 
+对于同类型的变量名，可以用number range lists列出*/
+
+DATA songs;    
+   INFILE 'C:\lizzieshao\lsascode\WBRK.dat';    
+   INPUT City $ 1-15 Age domk wj hwow simbh kt aomm libm tr filp ttr;
+   ARRAY new (10) Song1 - Song10;
+   ARRAY old (10) domk -- ttr;
+   DO i = 1 TO 10;
+      IF old(i) = 9 THEN new(i) = .;
+         ELSE new(i) = old(i);
+   END;
+   AvgScore = MEAN(OF Song1 - Song10);
+PROC PRINT DATA = songs;
+   TITLE 'WBRK Song Survey';
+RUN;
+*查看变量位置;
+proc contents data=songs position;
+run;

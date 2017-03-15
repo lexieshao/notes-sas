@@ -1,0 +1,178 @@
+
+/*-----------------------07 Program ，means-------------------
+默认：非缺失值个数、均值、标准差、极值 
+max min mean median n nmiss range stddev sum p10 p20
+proc mean；class；var；run*/
+
+DATA sales;    
+   INFILE 'C:\lizzieshao\lsascode\Flowers.dat';    
+   INPUT CustomerID $ @9 SaleDate MMDDYY10. Petunia SnapDragon
+         Marigold;    
+   Month = MONTH(SaleDate); 
+PROC SORT DATA = sales;    
+   BY Month; 
+
+* Calculate means by Month for flower sales;
+PROC MEANS DATA = sales;    
+   BY Month;    
+   VAR Petunia SnapDragon Marigold;
+   TITLE 'Summary of Flower Sales by Month';
+RUN;
+
+/*----------08 Program ，writing summary to sas dataset--------
+1、output delivery system（ods）
+2、output：output out=data-set output-stat-list
+statistic(var list)=name-list*/
+
+DATA sales;    
+   INFILE 'C:\lizzieshao\lsascode\Flowers.dat';
+   INPUT CustomerID $ @9 SaleDate MMDDYY10. Petunia SnapDragon Marigold;
+PROC SORT DATA = sales;
+   BY CustomerID;
+
+* Calculate means by CustomerID, output sum and mean to new data set;
+PROC MEANS NOPRINT DATA = sales;
+   BY CustomerID;
+   VAR Petunia SnapDragon Marigold;
+   OUTPUT OUT = totals  MEAN(Petunia SnapDragon Marigold) =
+          MeanPetunia MeanSnapDragon MeanMarigold
+      SUM(Petunia SnapDragon Marigold) = Petunia SnapDragon Marigold;
+PROC PRINT DATA = totals;
+   TITLE 'Sum of Flower Data over Customer ID';
+   FORMAT MeanPetunia MeanSnapDragon MeanMarigold 3.;
+RUN;
+
+
+/*-------------------------09 Program ,freq--------------------
+交叉列联表
+tables 后的选项：list（打印交叉表而不是网格）
+missing（包含缺失统计） nocol（强制在表中不打印列百分比 norow（强制不带音行百分比
+out=data-set（输出数据集）*/
+
+DATA orders;
+   INFILE 'C:\lizzieshao\lsascode\Coffee.dat';
+   INPUT Coffee $ Window $ @@;
+   run;
+
+* Print tables for Window and Window by Coffee;
+PROC FREQ DATA = orders;
+   TABLES Window  Window * Coffee;
+
+/*------------------10 Program ,tabulate 产生表格报告-------------
+   bi means freq的报告更耐看
+   proc tabulate;class;table page-dimension,row-dimension,column-dimension;
+   三个维度：页、行、列
+   默认不考虑缺失，可以在proc tabulate missing*/
+
+DATA boats;
+   INFILE 'C:\lizzieshao\lsascode\Boats.dat';
+   INPUT Name $ 1-12 Port $ 14-20 Locomotion $ 22-26 Type $ 28-30 
+      Price 32-36;
+RUN;
+
+* Tabulations with three dimensions;
+PROC TABULATE DATA = boats;
+   CLASS Port Locomotion Type;
+   TABLE Port, Locomotion, Type;
+   TITLE 'Number of Boats by Port, Locomotion, and Type';
+RUN;
+
+* var告诉saas哪些变量包含连续数据
+Tabulations with two dimensions and statistics
+tabulate可以计算：all（增加行、列或页，显示总数） max，min，mean，
+median，n，nmiss，p90，pctn（某类观测值百分数），pctsum（某类值总和的百分数
+stddev，sum
+concatenating：连接 table locomotion type all
+crossing：交叉 table mean*price
+crossing，grouping，concatenationg：table pctn*（locomotion type）
+;
+PROC TABULATE DATA = boats;
+   CLASS Locomotion Type;
+   VAR Price;
+   TABLE Locomotion ALL, MEAN*Price*(Type ALL);
+   TITLE 'Mean Price by Locomotion and Type';
+RUN;
+
+* PROC TABULATE report with options，提升输出外观
+1、format=选项，改变数据格式，e.g.在表中使得数字有逗号，并不含小数
+proc tabulate format=COMMA10.0
+2、box= misstext=用于table语句中
+box= 在tabulate报告的左上角空格中写入一句简洁的语句，类似标题
+misstext=，为空数据指定一个值，默认是.;
+PROC TABULATE DATA = boats FORMAT=DOLLAR9.2;
+   CLASS Locomotion Type;
+   VAR Price;
+   TABLE Locomotion ALL, MEAN*Price*(Type ALL)
+      /BOX='Full Day Excursions' MISSTEXT='none';
+   TITLE;
+RUN;
+
+* Changing headers，表头，=''去除表头  /row=float，强制去除空白空格;
+PROC FORMAT;
+   VALUE $typ  'cat' = 'catamaran'
+               'sch' = 'schooner'
+               'yac' = 'yacht';
+RUN;
+PROC TABULATE DATA = boats FORMAT=DOLLAR9.2;
+   CLASS Locomotion Type;
+   VAR Price;
+   FORMAT Type $typ.;
+   TABLE Locomotion='' ALL, 
+      MEAN=''*Price='Mean Price by Type of Boat'*(Type='' ALL)
+      /BOX='Full Day Excursions' MISSTEXT='none';
+   TITLE;
+RUN;
+
+
+/*--------------11 Program ，为tabulate输出的数据指定多种格式-------
+var*format=formatw.d*/
+DATA boats;
+   INFILE 'C:\lizzieshao\lsascode\Boats2.dat';
+   INPUT Name $ 1-12 Port $ 14-20 Locomotion $ 22-26 Type $ 28-30 
+      Price 32-36 Length 38-40;
+RUN;
+
+* Using the FORMAT= option in the TABLE statement;
+PROC TABULATE DATA = boats;
+   CLASS Locomotion Type;
+   VAR Price Length;
+   TABLE Locomotion ALL, 
+      MEAN * (Price*FORMAT=DOLLAR6.2 Length*FORMAT=6.0) * (Type ALL);
+   TITLE 'Price and Length by Type of Boat';
+RUN;
+
+/*-------------------14 Program ,format+freq的应用--------------*/
+
+DATA books;
+   INFILE 'C:\lizzieshao\lsascode\LibraryBooks.dat';
+   INPUT Age BookType $ @@;
+RUN;
+
+*Define formats to group the data;
+PROC FORMAT;
+   VALUE agegpa
+         0-18    = '0 to 18'
+         19-25   = '19 to 25'
+         26-49   = '26 to 49'
+         50-HIGH = '  50+ ';
+   VALUE agegpb
+         0-25    = '0 to 25'
+         26-HIGH = '  26+ ';
+   VALUE $typ
+        'bio','non','ref' = 'Non-Fiction'
+        'fic','mys','sci' = 'Fiction';
+RUN;
+
+*Create two way table with Age grouped into four categories;
+PROC FREQ DATA = books;
+   TITLE 'Patron Age by Book Type: Four Age Groups';
+   TABLES BookType * Age / NOPERCENT NOROW NOCOL;
+   FORMAT Age agegpa. BookType $typ.;
+RUN;
+
+*Create two way table with Age grouped into two categories;
+PROC FREQ DATA = books;
+   TITLE 'Patron Age by Book Type: Two Age Groups';
+   TABLES BookType * Age / NOPERCENT NOROW NOCOL;
+   FORMAT Age agegpb. BookType $typ.;
+RUN;

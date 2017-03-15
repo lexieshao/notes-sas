@@ -1,0 +1,100 @@
+/*proc+过程名+选项，data不选默认当前使用data，一般默认已经排序
+proc whatever data= by title footnote lable
+标题和脚注,多个脚注：footnote3'this is the third footnote'
+lable为输出变量加入标签，lable var1='dateorder'
+在data步中使用标签，保存于数据集，proc步使用标签，只在这个过程有效
+*/
+
+
+/* ---------01 Program  where,----------------------
+操作符：逻辑符号 = ^= >= <= & | is not missing 
+between and 
+contains 
+in()*/
+
+DATA 'C:\lizzieshao\lsascode\out\style';
+   INFILE 'C:\lizzieshao\lsascode\Artists.dat';
+   INPUT Name $ 1-21 Genre $ 23-40 Origin $ 42;
+RUN;
+PROC PRINT DATA = 'C:\lizzieshao\lsascode\out\style';
+   WHERE Genre = 'Impressionism';
+   TITLE 'Major Impressionist Painters';
+   FOOTNOTE 'F = France N = Netherlands U = US';
+RUN;
+
+/*-----------------------02 Program ,sort-----------------
+*/
+
+DATA marine;
+   INFILE 'C:\lizzieshao\lsascode\Lengths.dat';
+   INPUT Name $ Family $ Length @@;
+RUN;
+* Sort the data,NODUPKEY删除重复值，sas认为缺失值比字符串和数值都小;
+PROC SORT DATA = marine OUT = seasort NODUPKEY;
+   BY Family DESCENDING Length;
+PROC PRINT DATA = seasort;
+   TITLE 'Whales and Sharks';
+RUN;
+
+
+/*--------------------03 Program ，print------------------------
+ID var 指定观测变量 SUM var 打印变量总数 */
+
+DATA sales;    
+   INFILE 'C:\lizzieshao\lsascode\Candy.dat';    
+   INPUT Name $ 1-11 Class @15 DateReturned MMDDYY10. CandyType $
+      Quantity;
+   Profit = Quantity * 1.25;
+PROC SORT DATA = sales;
+   BY Class;
+PROC PRINT DATA = sales;
+   BY Class;
+   SUM Profit;
+   VAR Name DateReturned CandyType Profit;
+   TITLE 'Candy Sales for Field Trip by Class';
+RUN;
+
+/*-------------------04 Program ，formats-------------------
+普通形式：character  $formatw.
+  numeric  formatw.d
+   date    formatw.
+w是包含小数点在内的长度，d是小数位数
+format +变量名+格式
+在写原始数据和报告时候，可以在put语句中使用formats
+put var1 format1 var2 format2*/
+
+DATA sales;    
+   INFILE 'C:\lizzieshao\lsascode\Candy.dat';    
+   INPUT Name $ 1-11 Class @15 DateReturned MMDDYY10. CandyType $
+         Quantity;    
+   Profit = Quantity * 1.25; 
+PROC PRINT DATA = sales;    
+VAR Name DateReturned CandyType Profit;
+   FORMAT DateReturned DATE9. Profit DOLLAR6.2;
+   TITLE 'Candy Sale Data Using Formats';
+RUN;
+*常见格式：
+character：$HEXw.  $w.  
+DATEw. MMDDYYw.
+BEST. COMMAw.d  DOLLARw.d Ew.;
+
+/*-------------------05 Program ,format---------------------------*/
+
+DATA carsurvey;    
+   INFILE 'C:\lizzieshao\lsascode\Cars.dat';
+   INPUT Age Sex Income Color $;
+PROC FORMAT;
+   VALUE gender 1 = 'Male'
+                2 = 'Female';
+   VALUE agegroup 13 -< 20 = 'Teen'
+                  20 -< 65 = 'Adult'
+                  65 - HIGH = 'Senior';
+   VALUE $col  'W' = 'Moon White'
+               'B' = 'Sky Blue'
+               'Y' = 'Sunburst Yellow'
+               'G' = 'Rain Cloud Gray';
+* Print data using user-defined and standard (DOLLAR8.) formats;
+PROC PRINT DATA = carsurvey;
+   FORMAT Sex gender. Age agegroup. Color $col. Income DOLLAR8.;
+   TITLE 'Survey Results Printed with User-Defined Formats';
+RUN;

@@ -1,3 +1,3 @@
 # notes-sas
-#some notes about sas
-#the memo
+some notes about sas
+# notes-sas

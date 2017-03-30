@@ -12,7 +12,7 @@
 data _null_ 告诉sas不写数据集名，使得程序更快，file创建输出文件
 title；去掉所有自动标题
 put _page 在每个学生报告下面插上页码;
-DATA _NULL_;
+'DATA _NULL_;
    INFILE 'C:\lizzieshao\lsascode\Candy.dat';
    INPUT Name $ 1-11 Class @15 DateReturned MMDDYY10. 
          CandyType $ Quantity;
@@ -23,7 +23,7 @@ DATA _NULL_;
      // @5 'Congratulations!  You sold ' Quantity 'boxes of candy'
      / @5 'and earned ' Profit DOLLAR6.2 ' for our field trip.';
    PUT _PAGE_;
-RUN;
+RUN;'
 
 /*--------------------12 Program,简单输出 report------------------
 包含print、means、tabulate、sort的所有功能*/

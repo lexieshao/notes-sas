@@ -1,3 +1,4 @@
+
 # 06 Program 制定简单报告--------------------
  file ''print; put;  
    @n指定移动到第n列/  
@@ -5,12 +6,12 @@
     /跳动到下一行 #n，跳动到第n行
     @hold住当前行*/
 * 报告每个同学的销售情况
-data _null_ 告诉sas不写数据集名，使得程序更快，file创建输出文件
-title；去掉所有自动标题
+data _null_ 告诉sas不写数据集名，使得程序更快，file创建输出文件  
+title；去掉所有自动标题  
 put _page 在每个学生报告下面插上页码;
-'DATA _NULL_;
-   INFILE 'C:\lizzieshao\lsascode\Candy.dat';
-   INPUT Name $ 1-11 Class @15 DateReturned MMDDYY10. 
+    'DATA _NULL_;
+    INFILE 'C:\lizzieshao\lsascode\Candy.dat';
+    INPUT Name $ 1-11 Class @15 DateReturned MMDDYY10. 
          CandyType $ Quantity;
    Profit = Quantity * 1.25;
    FILE 'C:\lizzieshao\lsascode\Student.txt' PRINT;
@@ -19,7 +20,7 @@ put _page 在每个学生报告下面插上页码;
      // @5 'Congratulations!  You sold ' Quantity 'boxes of candy'
      / @5 'and earned ' Profit DOLLAR6.2 ' for our field trip.';
    PUT _PAGE_;
-RUN;'
+    RUN;'
 
 /*--------------------12 Program,简单输出 report------------------
 包含print、means、tabulate、sort的所有功能*/

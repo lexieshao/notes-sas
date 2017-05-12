@@ -36,12 +36,12 @@ http://search.msn.com/    "MSN Search"
 
 `<blockquote>`  
 
-```sas
-proc sql;
+`
+<proc sql;
    create table a as
    select * from tebl
-   quit;
-   ```
+   quit;>`
+   
 ### 脚注
 
 hello[^hello]  

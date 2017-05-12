@@ -2,4 +2,4 @@
 ## notes-sas
 ###### some notes about sas
 # notes-sas
- ![](http://www.baidu.com/img/bdlogo.gif
+![baidu](http://www.baidu.com/img/bdlogo.gif “百度LOGO”)

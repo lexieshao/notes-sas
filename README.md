@@ -41,7 +41,7 @@ proc sql;
    create table a as
    select * from tebl
    quit;
-   
+   ```
 ### 脚注
 
 hello[^hello]  
